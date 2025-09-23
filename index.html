@@ -152,7 +152,8 @@
       // --- Start of lib/deepseek.js ---
       async function getInterpretation(question, divinationData) {
         const { guaName, yaoIndex } = divinationData;
-        const API_KEY = process.env.OPENROUTER_API_KEY;
+        // 使用直接的API密钥，避免在浏览器中使用process对象
+        const API_KEY = import.meta.env.OPENROUTER_API_KEY || 'your-api-key-here';
         const API_URL = "https://openrouter.ai/api/v1/chat/completions";
         
         const systemInstructionText = `你是资深周易导师，对《周易》六十四卦及十翼有深入研究，擅长将古典智慧转化为现代可执行建议。回答时请使用地道简体中文，条理清晰，逻辑严谨。
