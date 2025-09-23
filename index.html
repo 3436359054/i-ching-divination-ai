@@ -45,6 +45,7 @@
       }
     </style>
   <link rel="stylesheet" href="/index.css">
+  <script type="module" crossorigin src="/i-ching-divination-ai/assets/index-DmSaK8oL.js"></script>
 </head>
   <body class="bg-gradient-to-br from-blue-50 to-purple-50">
     <div id="root"></div>
@@ -150,79 +151,34 @@
 
 
       // --- Start of lib/deepseek.js ---
-      async function getInterpretation(question, divinationData) {
-        const { guaName, yaoIndex } = divinationData;
-        // 使用Vite提供的环境变量，确保在浏览器环境中能正确加载
-        // 只使用import.meta.env以避免process未定义错误
-        const API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.OPENROUTER_API_KEY) || '';
-        
-        // 检查API密钥是否存在
-        if (!API_KEY) {
-          throw new Error('OpenRouter API密钥未设置，请在.env.local文件中添加OPENROUTER_API_KEY=您的密钥');
-        }
-        
-        const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-        
-        const systemInstructionText = `你是资深周易导师，对《周易》六十四卦及十翼有深入研究，擅长将古典智慧转化为现代可执行建议。回答时请使用地道简体中文，条理清晰，逻辑严谨。
-      当前用户抽得「${guaName}」，变爻为第${yaoIndex}爻。请基于本卦、变爻以及卦辞、象辞、爻辞，结合上下卦（外卦、内卦）关系，给出精准解读，并提供可操作的建议。
-      输出格式必须是严格的JSON对象，不要包含任何JSON之外的内容，具体格式如下：
-      {
-        "questionBackground": {"question": "问题文本"},
-        "hexagramOverview": {"hexagram": "卦名", "xiangCi": "象辞", "guaCi": "卦辞", "yaoCi": "爻辞", "fortune": "吉/凶/中性", "keyHint": "关键提示"},
-        "hexagramAnalysis": {"xiangCiInterpretation": "象辞解读", "guaCiEssence": "卦辞精要", "yaoCiAnalysis": "爻辞分析", "changedHexagramAnalysis": "变卦分析"},
-        "problemAnalysis": {"analysis": "问题分析", "recommendations": ["建议1", "建议2", "建议3"]},
-        "reminder": "温馨提醒"
-      }`;
-
-        const requestBody = {
-          model: "deepseek/deepseek-chat-v3.1:free",
-          messages: [
-            { role: "system", content: systemInstructionText },
-            { role: "user", content: `我的问题是：${question}` }
-          ],
-          temperature: 0.6,
-          max_tokens: 2000,
-          stream: false
-        };
-
+      // 添加调试函数，直接在控制台输出环境变量信息
+      function debugEnvVars() {
+        console.log('=== 浏览器端环境变量调试 ===');
+        console.log('typeof import.meta:', typeof import.meta);
         try {
-          const response = await fetch(API_URL, { 
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${API_KEY}`,
-              // 'HTTP-Referer': 'https://your-app.com', // 可选，网站URL用于在openrouter.ai上排名
-              // 'X-Title': '周易占卜AI应用' // 可选，网站标题用于在openrouter.ai上排名
-            },
-            body: JSON.stringify(requestBody),
-          });
-
-          if (!response.ok) {
-            try {
-              const errorBody = await response.json();
-              // 提供更具体的错误信息，帮助用户排查问题
-              const detailedError = `API 请求失败: ${errorBody.error?.message || '未知错误'}
-状态码: ${response.status}
-API密钥: ${API_KEY ? '已设置（部分隐藏）' : '未设置'}
-可能原因: ${response.status === 401 ? 'API密钥无效或已过期' : response.status === 429 ? 'API调用频率过高或已达到配额限制' : '服务器错误或网络问题'}`;
-              throw new Error(detailedError);
-            } catch (jsonError) {
-              throw new Error(`API 请求失败: 无法解析错误响应
-状态码: ${response.status}
-API密钥: ${API_KEY ? '已设置（部分隐藏）' : '未设置'}`);
-            }
+          console.log('import.meta.env 是否存在:', typeof import.meta !== 'undefined' && import.meta.env);
+          if (typeof import.meta !== 'undefined' && import.meta.env) {
+            console.log('import.meta.env.OPENROUTER_API_KEY 存在:', !!import.meta.env.OPENROUTER_API_KEY);
+            console.log('import.meta.env.VITE_OPENROUTER_API_KEY 存在:', !!import.meta.env.VITE_OPENROUTER_API_KEY);
           }
-
-          const responseData = await response.json();
-          const jsonText = responseData.choices?.[0]?.message?.content;
-          if (!jsonText) throw new Error("AI 返回了无效的数据结构。");
-          
-          // 清理可能的JSON前后的无关字符
-          const cleanedJson = jsonText.replace(/^[^{]*|[^}]*$/g, '');
-          return JSON.parse(cleanedJson);
-        } catch (error) {
-          console.error("Error fetching interpretation:", error);
-          throw error; // 直接抛出原始错误，保留详细信息
+        } catch (e) {
+          console.log('访问 import.meta.env 错误:', e.message);
+        }
+        console.log('=== 调试结束 ===');
+      }
+      
+      // 页面加载时执行调试
+      document.addEventListener('DOMContentLoaded', debugEnvVars);
+      // 代理函数，确保即使在模块加载完成前也能正常工作
+      // 实际的函数实现已移至deepseek-api.js并通过ES模块导入
+      async function getInterpretation(question, divinationData) {
+        if (window.getInterpretation && window.getInterpretation !== getInterpretation) {
+          // 如果全局作用域中已有从ES模块导入的函数，则使用它
+          return window.getInterpretation(question, divinationData);
+        } else {
+          // 模块加载前的临时错误处理
+          console.warn('deepseek-api.js模块尚未加载完成');
+          throw new Error('系统正在初始化中，请稍候再试。如果问题持续存在，请刷新页面。');
         }
       }
       // --- End of lib/gemini.js ---
@@ -415,5 +371,8 @@ API密钥: ${API_KEY ? '已设置（部分隐藏）' : '未设置'}`);
       // --- End of index.js ---
 
     </script>
-</body>
+    <!-- 环境变量调试脚本 -->
+    
+    <!-- 导入OpenRouter API模块 -->
+  </body>
 </html>
