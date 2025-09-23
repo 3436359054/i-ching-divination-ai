@@ -49,7 +49,7 @@
   <body class="bg-gradient-to-br from-blue-50 to-purple-50">
     <div id="root"></div>
     
-    <script type="text/babel">
+    <script type="text/babel" data-type="module">
       // All application code is now in this single block.
       // No more imports/exports or module issues.
 
@@ -153,7 +153,8 @@
       async function getInterpretation(question, divinationData) {
         const { guaName, yaoIndex } = divinationData;
         // 使用Vite提供的环境变量，确保能从.env.local等文件中正确加载
-        const API_KEY = import.meta.env.OPENROUTER_API_KEY;
+        // 添加process.env作为后备方案，增强兼容性
+        const API_KEY = import.meta?.env?.OPENROUTER_API_KEY || process.env?.OPENROUTER_API_KEY;
         
         // 检查API密钥是否存在
         if (!API_KEY) {
