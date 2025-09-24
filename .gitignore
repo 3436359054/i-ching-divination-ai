@@ -7,7 +7,21 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Environment variables - 保护API密钥和敏感信息
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# 不要提交任何包含API密钥的环境文件到版本控制
+# 当前项目只需要使用 .env 文件即可
+
+# Dependencies
+node_modules/
+
+# Build output
 dist
 dist-ssr
 *.local
@@ -15,6 +29,7 @@ dist-ssr
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -22,3 +37,22 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Testing
+coverage
+*.lcov
+.nyc_output
+
+# Production
+build
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+*.tmp
+*.temp
+.cache
