@@ -1,0 +1,4 @@
+{
+  "name": "AI I Ching Divination",
+  "description": "An application that combines the ancient wisdom of the I Ching with modern AI to provide insightful interpretations of life's questions. Users input a question and three numbers to receive a hexagram, which is then interpreted by the Gemini AI."
+}

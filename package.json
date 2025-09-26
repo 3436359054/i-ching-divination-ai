@@ -1,28 +1,17 @@
 {
-  "name": "i-ching-divination-ai",
+  "name": "ai-iching-monorepo",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "api-server": "node api-proxy.js",
-    "dev-with-api": "concurrently \"npm run dev\" \"npm run api-server\""
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.2",
-    "express": "^4.19.2",
-    "node-fetch": "^3.3.2",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "dev": "concurrently \"npm:dev:frontend\" \"npm:dev:backend\"",
+    "dev:frontend": "cd frontend && npx vite",
+    "dev:backend": "cd backend && npm run dev"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "gh-pages": "^6.1.1",
-    "vite": "^6.2.0"
+    "concurrently": "^8.2.2"
   }
 }
