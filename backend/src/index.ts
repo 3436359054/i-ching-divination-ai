@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path'; // 导入 path 模块
+import path from 'path';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 
@@ -22,7 +22,22 @@ app.use(express.json());
 
 // 使用 express.static 中间件来提供前端构建后的静态文件
 const staticFilesPath = path.join(__dirname, '..', 'public');
-app.use(express.static(staticFilesPath));
+// 确保Express能够正确处理静态资源请求
+app.use(express.static(staticFilesPath, {
+  // 确保所有静态文件都能被正确提供
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
+
+// 健康检查端点
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Backend server is running' });
+});
 
 // Deepseek API 路由
 app.post('/api/get-interpretation', async (req, res) => {
@@ -101,13 +116,10 @@ app.post('/api/get-interpretation', async (req, res) => {
   }
 });
 
-// 健康检查端点
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Backend server is running' });
-});
-
-// 对于所有非 API 请求，都返回前端的 index.html
+// 对于所有其他路由，返回前端的 index.html
+// 注意：这个路由应该放在所有API路由之后
 app.get('*', (req, res) => {
+  // 只对非API请求返回index.html，让静态文件中间件处理静态资源
   if (!req.path.startsWith('/api/')) {
     res.sendFile(path.join(staticFilesPath, 'index.html'));
   }
