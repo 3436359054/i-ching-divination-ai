@@ -49,6 +49,9 @@ Thumbs.db
 *.temp
 .cache
 
+# Docker login information
+loginDocekrInfo.txt
+
 # TypeScript
 *.tsbuildinfo
 

@@ -31,42 +31,68 @@ then
 fi
 
 # 检查Docker守护进程是否运行
-if ! docker info &> /dev/null
-then
-    echo -e "${RED}错误: Docker守护进程未运行，请启动Docker服务。${NC}"
-    echo -e "${YELLOW}启动命令: sudo systemctl start docker${NC}"
-    echo -e "${YELLOW}设置开机自启: sudo systemctl enable docker${NC}"
-    exit 1
-fi
+# if ! docker info &> /dev/null
+# then
+#     echo -e "${RED}错误: Docker守护进程未运行，请启动Docker服务。${NC}"
+#     echo -e "${YELLOW}启动命令: sudo systemctl start docker${NC}"
+#     echo -e "${YELLOW}设置开机自启: sudo systemctl enable docker${NC}"
+#     exit 1
+# fi
 
 # 检查用户是否有权限运行docker命令
-if ! docker ps -a &> /dev/null
-then
-    echo -e "${RED}错误: 当前用户没有权限运行Docker命令。${NC}"
-    echo -e "${YELLOW}解决方法1: 使用sudo运行本脚本${NC}"
-    echo -e "${YELLOW}解决方法2: 将用户添加到docker组: sudo usermod -aG docker $USER && newgrp docker${NC}"
-    exit 1
-fi
+# if ! docker ps -a &> /dev/null
+# then
+#     echo -e "${RED}错误: 当前用户没有权限运行Docker命令。${NC}"
+#     echo -e "${YELLOW}解决方法1: 使用sudo运行本脚本${NC}"
+#     echo -e "${YELLOW}解决方法2: 将用户添加到docker组: sudo usermod -aG docker $USER && newgrp docker${NC}"
+#     exit 1
+# fi
 
 # 提示用户确认或修改GitHub用户名
-read -p "请确认GitHub用户名 [$GITHUB_USERNAME]: " USER_INPUT
-if [ ! -z "$USER_INPUT" ]; then
-    GITHUB_USERNAME="$USER_INPUT"
-fi
+# read -p "请确认GitHub用户名 [$GITHUB_USERNAME]: " USER_INPUT
+# if [ ! -z "$USER_INPUT" ]; then
+#     GITHUB_USERNAME="$USER_INPUT"
+# fi
 
-# 提示用户输入GitHub Personal Access Token
-read -s -p "请输入GitHub Personal Access Token (具有write:packages权限): " GITHUB_PAT
-echo
+# 尝试从loginDocekrInfo.txt文件自动登录Docker
+echo -e "${BLUE}正在尝试从loginDocekrInfo.txt文件读取Docker登录信息...${NC}"
 
-# 登录GitHub Container Registry
-echo -e "${GREEN}正在登录GitHub Container Registry...${NC}"
-echo "$GITHUB_PAT" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
-
-if [ $? -ne 0 ]
-then
-    echo -e "${RED}登录失败，请检查您的GitHub用户名和Personal Access Token。${NC}"
-    echo -e "${YELLOW}提示: 确保Personal Access Token具有write:packages权限${NC}"
-    exit 1
+# 检查loginDocekrInfo.txt文件是否存在
+if [ -f "loginDocekrInfo.txt" ]; then
+    # 读取用户名和密码
+    USERNAME=$(grep "^user=" loginDocekrInfo.txt | cut -d'=' -f2)
+    PASSWORD=$(grep "^password=" loginDocekrInfo.txt | cut -d'=' -f2)
+    
+    # 检查是否成功读取了用户名和密码
+    if [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
+        echo -e "${GREEN}✓ 成功读取登录信息，正在自动登录GitHub Container Registry...${NC}"
+        
+        # 使用读取的信息自动登录Docker
+        echo "$PASSWORD" | docker login ghcr.io -u "$USERNAME" --password-stdin &> /dev/null
+        
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ 自动登录成功！${NC}"
+        else
+            echo -e "${RED}错误: 自动登录失败，请检查loginDocekrInfo.txt文件中的凭据是否正确。${NC}"
+            echo -e "${YELLOW}解决方法: 手动登录: docker login ghcr.io -u $USERNAME${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${RED}错误: loginDocekrInfo.txt文件格式不正确，找不到有效的用户名或密码。${NC}"
+        echo -e "${YELLOW}文件格式应为:\nuser=您的GitHub用户名\npassword=您的Personal Access Token${NC}"
+        exit 1
+    fi
+else
+    echo -e "${YELLOW}警告: 未找到loginDocekrInfo.txt文件，检查当前登录状态...${NC}"
+    
+    # 检查用户是否已登录GHCR
+    if ! docker info 2>/dev/null | grep -q "ghcr.io"; then
+        echo -e "${RED}错误: 当前用户没有登录GitHub Container Registry。${NC}"
+        echo -e "${YELLOW}解决方法1: 创建loginDocekrInfo.txt文件包含登录信息\n解决方法2: 运行本脚本前先手动登录: docker login ghcr.io -u $GITHUB_USERNAME${NC}"
+        exit 1
+    else
+        echo -e "${GREEN}✓ 检测到已有登录状态，继续执行...${NC}"
+    fi
 fi
 
 # 构建Docker镜像
