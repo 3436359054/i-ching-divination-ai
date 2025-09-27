@@ -93,7 +93,7 @@ const App: React.FC = () => {
           )}
         </div>
         <footer className="text-center mt-8 text-gray-400 text-sm">
-            <p>This divination is for entertainment and self-reflection purposes only.</p>
+            <p>弘扬传统文化,预测仅供娱乐,不构成任何建议或承诺。</p>
         </footer>
       </main>
     </div>
