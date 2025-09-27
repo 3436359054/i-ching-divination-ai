@@ -5,7 +5,6 @@ import { Loader } from './components/Loader';
 import { calculateDivination } from './services/divinationService';
 import { getInterpretation } from './services/deepseekService';
 import { DivinationResult } from './types';
-import { SparklesIcon } from './components/icons/SparklesIcon';
 
 const App: React.FC = () => {
   const [question, setQuestion] = useState<string>('');
@@ -57,7 +56,6 @@ const App: React.FC = () => {
       <main className="w-full max-w-2xl mx-auto transition-all duration-500 animate-fade-in-up">
         <header className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center gap-3">
-            <SparklesIcon />
             AI 周易卜卦
           </h1>
           <p className="text-gray-500 mt-2">结合古老智慧与现代AI，为你解惑。</p>
